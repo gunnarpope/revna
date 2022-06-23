@@ -22,11 +22,15 @@ class Todo():
         self.task     = task
         self.level    = level 
         self.status   = status
-        self.origin   = dt.isoformat(dt.now())
+        self.origin   = dt.now().strftime('%Y-%m-%d')
         self.due      = due
 
 def GetPending():
-    print(df[ df['status'] != 'done']['task'])
+    tasks = df[ df['status'] != 'done']
+    if tasks.size == 0:
+        print('Congratulations - You have no pending tasks!')
+    else:
+        print(tasks)
 
 def RemoveTask(id):
     df.loc[int(id), 'status'] = 'done'
@@ -37,8 +41,8 @@ parser.add_argument("-d", "--due",      type=str, help="Add a due date to an ite
 parser.add_argument("-s", "--status",   type=str, help="The status of the task ( todo | doing | done )")
 parser.add_argument("-i", "--importance",    type=str, help="The importance level of the task ( low | med | high )")
 parser.add_argument("-c", "--category", type=str, help="The category of the task.")
-parser.add_argument("-l", "--list",     type=str, help="List all pending tasks.")
-parser.add_argument("-g", "--go",       type=str, help="Revna, let's go!")
+parser.add_argument("-l", "--list",     help="List all pending tasks.", action='store_true')
+parser.add_argument("-g", "--go",      action='store_true', help="Revna, let's go!")
 parser.add_argument("-r", "--remove",  type=str, help="Remove a task")
 args = parser.parse_args()
 
@@ -52,7 +56,7 @@ if args.add:
     df = pd.concat([df, df_new], ignore_index=True)
 
 elif args.list:
-    df[ df['status'] != 'done'].head()
+    print(df[ df['status'] != 'done'])
 
 elif args.go:
     print("Hello, Gunnar.")
@@ -64,6 +68,11 @@ elif args.remove:
     # import pdb; pdb.set_trace()
     RemoveTask(args.remove)
     df.to_json(df_filename)
+
+else:
+    print("Here's what you have to do today...\n")
+    GetPending()
+
 
 # write the final result to file.
 df.to_json(df_filename )
