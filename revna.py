@@ -33,17 +33,39 @@ def GetPending():
         print(tasks)
 
 def RemoveTask(id):
-    df.loc[int(id), 'status'] = 'done'
+    id = int(id)
+    df.loc[int(id), 'rm_date'] = dt.now().strftime('%Y-%m-%d')
+    df.loc[int(id), 'status'] = 'removed'
+    print('Task Removed: ')
+    print(df.loc[id])
 
-parser = argparse.ArgumentParser(description="I'm Revna, your personal assistant for getting shit done.")
-parser.add_argument("-a", "--add",     type=str, help="Add an item to the todo list")
-parser.add_argument("-d", "--due",      type=str, help="Add a due date to an item")
-parser.add_argument("-s", "--status",   type=str, help="The status of the task ( todo | doing | done )")
-parser.add_argument("-i", "--importance",    type=str, help="The importance level of the task ( low | med | high )")
+def MarkTaskAsDone(id):
+    id = int(id)
+    df.loc[int(id), 'done_date'] = dt.now().strftime('%Y-%m-%d')
+    df.loc[int(id), 'status'] = 'done'
+    print('Task Done: ')
+    print(df.loc[id])
+
+def MarkTaskAsUndone(id):
+    id = int(id)
+    df.loc[int(id), 'done_date'] = 'NaN' 
+    df.loc[int(id), 'status'] = 'todo'
+    print('Task Done: ')
+    print(df.loc[id])
+
+
+parser = argparse.ArgumentParser(description="I'm Revna - your personal, get-shit-done assistant.")
+parser.add_argument("--add",     type=str, help="Add an item to the todo list")
+parser.add_argument("--all",      help="List all tasks", action='store_true')
+parser.add_argument("--due",           type=str, help="Add a due date to an item")
+parser.add_argument("-d", "--done",    type=str, help="Mark task as done")
+parser.add_argument("-u", "--undone",    type=str, help="Mark task as undone")
+parser.add_argument("-s", "--status",  type=str, help="The status of the task ( todo | doing | done )")
+parser.add_argument("-i", "--importance", type=str, help="The importance level of the task ( low | med | high )")
 parser.add_argument("-c", "--category", type=str, help="The category of the task.")
-parser.add_argument("-l", "--list",     help="List all pending tasks.", action='store_true')
-parser.add_argument("-g", "--go",      action='store_true', help="Revna, let's go!")
-parser.add_argument("-r", "--remove",  type=str, help="Remove a task")
+parser.add_argument("-l", "--list",     action='store_true', help="List all pending tasks.")
+parser.add_argument("-g", "--go",       action='store_true', help="Revna, let's go!")
+parser.add_argument("-r", "--remove",   type=str, help="Remove a task")
 args = parser.parse_args()
 
 # parse the arguments
@@ -58,6 +80,9 @@ if args.add:
 elif args.list:
     print(df[ df['status'] != 'done'])
 
+elif args.all:
+    print(df)
+
 elif args.go:
     print("Hello, Gunnar.")
     print("Here are your tasks for today:")
@@ -65,8 +90,15 @@ elif args.go:
 
 elif args.remove:
     print('Removing Task: ', args.remove)
-    # import pdb; pdb.set_trace()
     RemoveTask(args.remove)
+    df.to_json(df_filename)
+
+elif args.done:
+    MarkTaskAsDone(args.done)
+    df.to_json(df_filename)
+
+elif args.done:
+    MarkTaskAsUndone(args.undone)
     df.to_json(df_filename)
 
 else:
