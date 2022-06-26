@@ -19,20 +19,20 @@ df = pd.read_json(df_filename)
 def CreateTodo(task):
     print('Todo: ', task)
     global df
-    task = Todo(task=task, level=args.importance, status=args.status, due=args.due)
+    task = Todo(task=task, status=args.status, due=args.due)
 
     df_new = pd.DataFrame(task.__dict__, index=[1])
     df = pd.concat([df, df_new], ignore_index=True)
     df.to_json(df_filename)
 
 class Todo():
-    def __init__(self, task, project=None, status='todo',  due=None, level='low', category=None):
-        self.category = category 
+    def __init__(self, task, status='todo',  due=None, group=None):
         self.task     = task
-        self.level    = level 
         self.status   = status
-        self.origin   = dt.now().strftime('%Y-%m-%d')
+        self.start    = dt.now().strftime('%Y-%m-%d')
         self.due      = due
+        self.group    = group  
+        self.end      = None 
 
 def SaveDf():
     global df
@@ -120,9 +120,6 @@ def Main():
 
     elif args.done:
         MarkTaskAsDone(args.done)
-
-    elif args.undone:
-        MarkTaskAsUndone(args.undone)
 
     elif args.remove:
         RemoveTask(args.remove)
