@@ -16,14 +16,14 @@ filename = REVNA_ROOT + 'todo/list.json'
 df_filename = REVNA_ROOT + 'todo/todo.json'
 df = pd.read_json(df_filename)
 
-def CreateTodo(task):
-    print('Todo: ', task)
+def CreateTodo(args):
     global df
-    task = Todo(task=task, status=args.status, due=args.due)
+    task = Todo(task=args.add, status=args.status, due=args.due)
 
     df_new = pd.DataFrame(task.__dict__, index=[1])
     df = pd.concat([df, df_new], ignore_index=True)
     df.to_json(df_filename)
+    print(df)
 
 class Todo():
     def __init__(self, task, status='todo',  due=None, group=None):
@@ -111,7 +111,7 @@ def Main():
     
     # READ/WRITE commands below.
     if args.add:
-        CreateTodo(args.add)
+        CreateTodo(args)
 
     elif args.remove:
         # import pdb; pdb.set_trace()
