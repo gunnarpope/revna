@@ -18,7 +18,7 @@ df = pd.read_json(df_filename)
 
 def CreateTodo(args):
     global df
-    task = Todo(task=args.add, status=args.status, due=args.due)
+    task = Todo(task=args.add, status='todo', due=args.due)
 
     df_new = pd.DataFrame(task.__dict__, index=[1])
     df = pd.concat([df, df_new], ignore_index=True)
@@ -60,8 +60,8 @@ def RemoveTask(id):
 def MarkTaskAsDone(id):
     id = int(id)
     global df
-    df.loc[int(id), 'end'] = dt.now().strftime('%Y-%m-%d')
-    df.loc[int(id), 'status'] = 'done'
+    df.loc[id, 'end'] = dt.now().strftime('%Y-%m-%d')
+    df.loc[id, 'status'] = 'done'
     df.to_json(df_filename)
     print('Task Done: ')
     print(df.loc[id])
@@ -81,6 +81,23 @@ def RemoveTask(id):
     df = df.drop(id)
     df.to_json(df_filename)
 
+def Edit(idx=None, task=None, group=None, status=None, due=None, end=None):
+
+    if idx:
+
+        if task:
+            df.loc[idx, 'task'] = task
+        if status:
+            df.loc[idx, 'status'] = status 
+        if group:
+            df.loc[idx, 'group'] = group 
+        if due:
+            df.loc[idx, 'due'] = due 
+        if end:
+            df.loc[idx, 'end'] = end 
+
+    df.to_json(df_filename)
+
 def Main():
     global df
     parser = argparse.ArgumentParser(description="I'm Revna - your personal, get-shit-done assistant.")
@@ -88,17 +105,26 @@ def Main():
     parser.add_argument("-A", "--all",     help="List all tasks", action='store_true')
     parser.add_argument("-d", "--doing",   type=str, help="Mark task as doing")
     parser.add_argument("-D", "--done",    type=str, help="Mark task as done")
+    parser.add_argument("-e", "--edit",    type=str, help="Edit a row, by index number. $revna -e N --group groupname")
     parser.add_argument("-s", "--status",  type=str, help="The status of the task ( todo | doing | done )")
     parser.add_argument("-l", "--list",    action='store_true', help="List all pending tasks.")
-    parser.add_argument("-g", "--go",      action='store_true', help="Revna, let's go!")
+    parser.add_argument("--group",   type=str, help=" The name of the group to edit.")
+    parser.add_argument("--task",   type=str, help=" The name of the task to edit.")
     parser.add_argument("-r", "--remove",  type=str, help="Remove a task")
     parser.add_argument("--due",           type=str, help="Add a due date to an item")
+    parser.add_argument("--end",           type=str, help="Add a due date to an item")
     parser.add_argument("--debug",         action='store_true', help="Start debugging Revna.")
     parser.add_argument("--clean",         action='store_true', help="Clean out all removed tickets.")
     args = parser.parse_args()
 
     if args.debug:
         import pdb; pdb.set_trace()
+    
+    if args.edit:
+        idx = int(args.edit)
+        Edit(idx=idx, task=args.task, group=args.group, status=args.status, due=args.due, end=args.end)
+        GetPending()
+        
 
     elif args.list:
         print(df[ df['status'] != 'done'])
@@ -106,27 +132,23 @@ def Main():
     elif args.all:
         print(df)
 
-    elif args.go:
-        GetPending()
     
     # READ/WRITE commands below.
-    if args.add:
+    elif args.add:
         CreateTodo(args)
 
     elif args.remove:
-        # import pdb; pdb.set_trace()
+
         print('Removing Task: ', args.remove)
         RemoveTask(args.remove)
 
     elif args.done:
         MarkTaskAsDone(args.done)
 
-    elif args.remove:
-        RemoveTask(args.remove)
-
     else:
-        print("Here's what you have to do today...\n")
         GetPending()
+
+    
 
 
 if __name__ == '__main__':
