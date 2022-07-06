@@ -83,7 +83,7 @@ def RemoveTask(id):
 
 def Edit(idx=None, task=None, group=None, status=None, due=None, end=None):
 
-    if idx:
+    if idx != None:
 
         if task:
             df.loc[idx, 'task'] = task
